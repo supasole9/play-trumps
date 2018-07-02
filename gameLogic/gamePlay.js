@@ -1,95 +1,77 @@
 const Cards = require("./cards");
 
-const PLAYER_LIST = [];
 const GAME_LIST = [];
 
 const gameid = function () {
-  var string = "";
-  var alphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (var i = 0; i < 6; i++) {
+  let string = "";
+  let alphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 6; i++) {
     string += alphabets.charAt(Math.floor(Math.random() * alphabets.length ));
   }
   return string
 }
 
-const gameDeal = function (deck, p1, p2, game) {
-  let checkDuplicate = [];
-  let boardCount = 4;
-
-  for (var i = 0; i < 8; i++ ){
-    p1.hand.push(deck[i]);
-    deck.splice(i, 1)
-    p2.hand.push(deck[i]);
-    deck.splice(i, 1)
+const gameDeal = function (game) {
+  let i = 0;
+  while (i < 12){
+    game.player1.hand.push(game.gameDeck[i]);
+    game.gameDeck.splice(i, 1);
+    game.player2.hand.push(game.gameDeck[i]);
+    game.gameDeck.splice(i, 1);
+    game.player3.hand.push(game.gameDeck[i]);
+    game.gameDeck.splice(i, 1);
+    game.player4.hand.push(game.gameDeck[i]);
+    i++;
   }
-
-  let j = deck.length - 1;
-
-  while (boardCount){
-      if (deck[j].name == 'A'){
-        Cards.shuffle(deck);
-      }
-      else if (deck[j].suit == 'Spades') {
-        if(deck[j].name == '2' || checkDuplicate.includes(deck[j].value)){
-        Cards.shuffle(deck);
-        } else{
-          game.board.push(deck[j]);
-          checkDuplicate.push(deck[j].value);
-          deck.pop();
-          j--;
-          boardCount--;
-        }
-      }
-      else if (deck[j].suit == 'Diamonds'){
-        if (deck[j].name == '10' || checkDuplicate.includes(deck[j].value)){
-          Cards.shuffle(deck);
-        } else{
-          game.board.push(deck[j]);
-          checkDuplicate.push(deck[j].value);
-          deck.pop();
-          j--;
-          boardCount--;
-        }
-      }
-      else if(checkDuplicate.includes(deck[j].value)){
-        Cards.shuffle(deck);
-      }
-      else{
-        game.board.push(deck[j]);
-        checkDuplicate.push(deck[j].value);
-        deck.pop();
-        j--;
-        boardCount--;
-      }
+  for (let j = 0; j < 4; j++){
+    game.kitty.push(game.gameDeck[j]);
+      game.gameDeck.splice(j, 1);
   }
-  // console.log(p1.hand, p2.hand, game.board)
 }
 
-function Player (data, ws) {
-  this.playerName = data.name,
-  this.playing = false,
+function Player (ws) {
+  this.playerName = null,
   this.ws = ws,
   this.hand = [],
   this.gameID = null
 }
 
-function Game(player1, player2) {
+function Game(p1) {
   this.gameDeck = new Cards.deck,
   this.gameEnd = false,
-  this.player1 = player1,
-  this.player2 = player2,
+  this.player1 = p1,
+  this.player2 = new Player(),
+  this.player3 = new Player(),
+  this.player4 = new Player(),
   this.board = [],
+  this.kitty = [],
   this.gameID = gameid()
 };
 
 const Check = function (data, ws) {
   if (data.action == "NewGame") {
-    var p = new Player(data, ws);
+    let p = new Player(ws);
     confirmSignIn(data, ws);
-    gamefind(p);
-    PLAYER_LIST.push(p);
-  } else if (data.action == "Game-Play") {
-    gamePlayCheck(data, ws, data.gameId);
+    let newGame = new Game(p);
+    GAME_LIST.push(newGame);
+    gameDeal(newGame);
+    ws.send(JSON.stringify( {action: "newGame", gameID: newGame.gameID, hand: newGame.player1.hand}));
+  } else if (data.action == "Submit-Card") {
+    for (let i = 0; i < GAME_LIST.length; i++) {
+      if (GAME_LIST[i].gameID == data.gameId) {
+        if (GAME_LIST[i].player1.ws == ws) {
+          for (let j = 0; j < GAME_LIST[i].player1.hand.length; j++ ) {
+            if (GAME_LIST[i].player1.hand[j].id == data.card.id) {
+              let tempCard = GAME_LIST[i].player1.hand[j];
+              GAME_LIST[i].player1.hand.splice(j, 1);
+              GAME_LIST[i].board.push(tempCard);
+              console.log(GAME_LIST[i]);
+              ws.send(JSON.stringify( {action: "playedCard", board: GAME_LIST[i].board, hand: GAME_LIST[i].player1.hand}));
+            }
+          }
+        }
+      }
+    }
   }
 };
 
@@ -100,18 +82,11 @@ const confirmSignIn = function (playerData, websocket) {
 }
 
 const gamefind = function (person) {
-  for (var aa in PLAYER_LIST) {
-    var pp = PLAYER_LIST[aa];
-    if (pp.playing == false && person.ws != pp.ws) {
-      person.playing = true;
-      pp.playing = true;
-      var newGame = new Game(pp, person);
-      GAME_LIST.push(newGame);
-      gameDeal(newGame.gameDeck, pp, person, newGame)
-      newGame.player1.ws.send(JSON.stringify( {action: "newGame", gameID: newGame.gameID, opponentName: person.name, hand: pp.hand, board: newGame.board}));
-      newGame.player2.ws.send(JSON.stringify( {action: "newGame", gameID: newGame.gameID, opponentName: pp.name, hand: person.hand, board: newGame.board} ));
-    }
-  } return
+  var newGame = new Game();
+  GAME_LIST.push(newGame);
+  gameDeal(newGame.gameDeck, pp, person, newGame)
+  newGame.player1.ws.send(JSON.stringify( {action: "newGame", gameID: newGame.gameID, opponentName: person.name, hand1: newGame.player1.hand, hand2: newGame.player2.hand, hand3: newGame.player3.hand, hand4: newGame.player4.hand, board: newGame.board}));
+  // newGame.player2.ws.send(JSON.stringify( {action: "newGame", gameID: newGame.gameID, opponentName: pp.name, hand: person.hand, board: newGame.board} ));
 };
 
 const gamePlayCheck = function (data, websocket, gameId) {

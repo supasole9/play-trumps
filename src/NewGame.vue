@@ -1,40 +1,40 @@
 <template>
-  <div>
-    <button v-if="game" v-on:click="newGAME">Start</button>
-    <div class="board">
-      <ul class="relative">
-        <li v-for="card in board" v-bind:key="card.id">
-          <card :name="card.name" :suit="card.suit" :value="card.value" :symbol="card.symbol"></card>
-        </li>
-      </ul>
+  <div class="game">
+    <div>
+      <button v-if="game" v-on:click="newGAME">Start</button>
     </div>
-
+    <div class="board" v-for="card in board" v-bind:key="card.id">
+      <card :card="card"
+        :name="card.name"
+        :suit="card.suit"
+        :value="card.value"
+        :symbol="card.symbol"
+      ></card>
+    </div>
     <div class="hand">
-      <ul class="hand relative">
-        <li v-for="card in hand" v-bind:key="card.id">
-          <card :name="card.name"
-                :suit="card.suit"
-                :value="card.value"
-                :symbol="card.symbol"
-                v-on:discard="discard(card)"
-          ></card>
-        </li>
-      </ul>
+      <div>
+        <hand :Hi = this.player
+        v-on:playCard="ShowCard($event)"
+        ></hand>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import Hand from "./hand.vue";
 import Card from "./card.vue";
 
 export default {
   name: 'game',
   data () {
     return {
+      player: [],
       board: [],
-      hand: [],
       game: true,
       showOption: false,
+      gameId: null,
+      socket: null,
       gameId: null
     }
   },
@@ -65,7 +65,15 @@ export default {
         gameId: this.gameId,
         object: card
       }))
+    },
+    ShowCard: function (data) {
+      this.socket.send(JSON.stringify({
+        action: 'Submit-Card',
+        gameId: this.gameId,
+        card: data
+      }))
     }
+
   },
   created: function () {
     let thisState = this;
@@ -81,6 +89,7 @@ export default {
     };
   },
   components:{
+    'hand': Hand,
     'card': Card
   }
 };
@@ -88,46 +97,43 @@ export default {
 var logMessages = function (e, app) {
   var data = JSON.parse(e);
   if(data.action == "newGame") {
-    app.board = data.board;
-    app.hand = data.hand;
+    app.player = data.hand;
     app.gameId = data.gameID;
   } else if (data.action == "Play" && data.adjective == "Discarded") {
     app.board = data.board;
-    app.hand = data.hand;
+  } else if (data.action == "playedCard") {
+    console.log("post Card Played");
+    app.board = data.board;
+    app.player = data.hand;
   }
 };
 
 </script>
 
 <style>
+body{
+  margin: 0;
+  height: 100vh;
+}
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  height: 100vh;
 }
 
-.board{
-  margin-top: 250px;
-  height: 200px;
+.game{
+  height: 100%;
+  display: grid;
+  grid-template-rows: 25% auto 45%;
+  grid-row-gap: 1rem;
 }
 
 .hand{
-  height: 25%;
-}
-.relative{
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-}
-ul{
-  padding-left: 0;
-}
-
-li{
-  list-style: none;
-  margin-left: 0;
+height: 50%;
+align-self: center;
 }
 </style>

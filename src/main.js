@@ -18,6 +18,8 @@ const router = new VueRouter({
   mode: 'history'
 });
 
+export const eBus = new Vue();
+
 new Vue({
   el: '#app',
   router,
