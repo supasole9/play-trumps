@@ -39,24 +39,27 @@ export default {
     }
   },
   methods: {
-    newGame: function () {
+    newGAME: function () {
       let thisState = this;
-      fetch("http://localhost:9090/newgame", {
+      fetch("http://localhost:9090/games", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
       }).then(function(res){
-        return res.json();
+        console.log(res.status)
+        if (res.status == 201) {
+
+        }
       })
     },
-    newGAME: function () {
-      this.game = false;
-      this.socket.send(JSON.stringify({
-        action: "NewGame",
-        name:"Ross"
-      }))
-    },
+    // newGAME: function () {
+    //   this.game = false;
+    //   this.socket.send(JSON.stringify({
+    //     action: "NewGame",
+    //     name:"Ross"
+    //   }))
+    // },
     discard: function(card){
       this.hand.splice(card.key, 1);
       this.socket.send(JSON.stringify({
@@ -113,15 +116,6 @@ var logMessages = function (e, app) {
 <style>
 body{
   margin: 0;
-  height: 100vh;
-}
-
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
   height: 100vh;
 }
 

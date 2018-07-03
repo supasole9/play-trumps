@@ -4,10 +4,12 @@ import App from './App.vue';
 import Dashboard from './Dashboard.vue';
 import Home from './Home.vue';
 import NewGame from './NewGame.vue';
+import SimpleLogIn from './SimpleLogIn.vue';
 
 Vue.use(VueRouter);
 
 const routes = [
+  { path: '/simpleLogIn', component: SimpleLogIn },
   { path: '/newgame', component: NewGame },
   { path: '/dashboard', component: Dashboard },
   { path: '/', component: Home }

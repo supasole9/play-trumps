@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="wrapper">
-    <h1>SUIPI</h1>
+    <h1>Trumps</h1>
     <app-error v-if="error"></app-error>
     <div v-if="loginView">
       <p v-if="signinErrors.length">
@@ -29,6 +29,9 @@
       <input type="number" v-model="age" placeholder="Enter Age"> <br>
       <button v-on:click="create">Create Account</button>
       <p v-on:click="switchView">Already have an account? Log in</p>
+    </div>
+    <div v-on:click="simpleLogIn">
+      Want to skip signing up?
     </div>
   </div>
 </template>
@@ -120,6 +123,10 @@ export default {
     },
     switchView: function () {
       this.loginView = !this.loginView;
+    },
+    simpleLogIn: function () {
+      console.log("skip to simple log in")
+      this.$router.push("/simpleLogIn");
     }
   },
   created: function () {
@@ -140,12 +147,4 @@ export default {
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>

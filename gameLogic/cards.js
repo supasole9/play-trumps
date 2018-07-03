@@ -35,7 +35,17 @@ function newDECK(){
 	return shuffledDeck(nDeck);
 }
 
+function gameid() {
+  let string = "";
+  let alphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 6; i++) {
+    string += alphabets.charAt(Math.floor(Math.random() * alphabets.length ));
+  }
+  return string
+}
+
 module.exports = {
 	deck: newDECK,
-	shuffle: shuffledDeck
+  shuffle: shuffledDeck,
+  gameId: gameid
 }
