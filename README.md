@@ -1,4 +1,5 @@
-# play-suipi
+# Trumps
+## The game created at Kahuku High School
 
 ### RESTful API
 
