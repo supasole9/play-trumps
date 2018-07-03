@@ -1,6 +1,6 @@
 # play-suipi
 
-###RESTful API
+### RESTful API
 
 | Methods | Paths | Name |
 |---------|-------|------|
