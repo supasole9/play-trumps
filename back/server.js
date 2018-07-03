@@ -99,9 +99,8 @@ app.post("/users", function(req, res) {
   });
 });
 
-app.post("/newgame", function (req, res) {
-  var Deck = new Cards.deck();
-  res.send(JSON.stringify({ Deck: Deck }));
+app.post("/game", function (req, res) {
+
 })
 
 var server = app.listen(9090, function () {

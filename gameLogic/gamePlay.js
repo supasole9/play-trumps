@@ -79,7 +79,7 @@ const confirmSignIn = function (playerData, websocket) {
   websocket.send(JSON.stringify({
     action: "signupSuccess"
   }))
-}
+};
 
 const gamefind = function (person) {
   var newGame = new Game();
