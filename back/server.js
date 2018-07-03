@@ -111,8 +111,9 @@ app.get("/games/:gameId", function (req, res) {
   console.log("Retrieve game");
 });
 
-app.post("/game", function (req, res) {
-  console.log("Creating Games");
+app.post("/games", function (req, res) {
+  let game = new Cards.deck();
+  res.status(201).json({game});
 });
 
 app.put("/games/:gameId", function (req, res) {
@@ -147,4 +148,4 @@ wss.on('connection', function(ws) {
       let json = JSON.parse(data);
       Check.check(json, ws)
     })
-})
+});
