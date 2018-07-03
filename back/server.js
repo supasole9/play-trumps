@@ -99,9 +99,34 @@ app.post("/users", function(req, res) {
   });
 });
 
-app.post("/game", function (req, res) {
+app.get("/users", function (req, res) {
+  console.log("Listing Users");
+});
 
-})
+app.get("/games", function (req, res) {
+  console.log("Listing Games");
+});
+
+app.get("/games/:gameId", function (req, res) {
+  console.log("Retrieve game");
+});
+
+app.post("/game", function (req, res) {
+  console.log("Creating Games");
+});
+
+app.put("/games/:gameId", function (req, res) {
+  console.log("Editing Game");
+});
+
+app.delete("/games/:gameId", function (req, res) {
+  console.log("Deleting game");
+});
+
+app.delete("/me", function (req, res) {
+  console.log("Deleting session data");
+});
+
 
 var server = app.listen(9090, function () {
   console.log("server started");
