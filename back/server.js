@@ -21,7 +21,7 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use(session({secret: "deezBIGnuts", resave: false, saveUninitialized: true}));
+app.use(session({secret: 'deezBIGnuts', resave: false, saveUninitialized: true}));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -48,7 +48,6 @@ passport.use(new passportLocal.Strategy(
 }));
 
 passport.serializeUser(function(user, done) {
-  console.log(user)
   done(null, user._id)
 });
 
@@ -60,16 +59,54 @@ passport.deserializeUser(function(id, done) {
   });
 });
 
-app.post("/session", passport.authenticate("local"), function (req,res) {
-  res.sendStatus(201);
+// app.post("/session", passport.authenticate("local"), function (req ,res) {
+//   console.log(req)
+//   res.sendStatus(201);
+// });
+
+app.post("/session", function (req, res) {
+  let email = req.body.email
+  userModel.User.findOne({ email:email }).then(function (user) {
+    if (!user) {
+      res.status(401).send("Email not found");
+    }
+    user.verifyPassword(req.body.password, function (valid) {
+      if (valid) {
+        res.status(201).json(user);
+      } else {
+        console.log("bad password");
+      }
+    });
+  });
 });
 
-app.get("/me", function(req, res) {
-  if (req.user) {
-    res.json(req.user.simpleUser())
-  } else {
-    res.sendStatus(401);
-  }
+// app.get("/me", function(req, res) {
+//   if (req.user) {
+//     res.json(req.user.simpleUser())
+//   } else {
+//     res.sendStatus(401);
+//   }
+// });
+
+app.get("/me/:id", function(req, res) {
+  userModel.User.findOne({ _id:req.params.id }).then(function (user) {
+    if (!user) {
+      return res.status(401).send('ID not found');
+    }
+    res.status(200).json(user);
+  }, function (err) {
+    if (err.errors) {
+      var messages = {}
+      for (var e in err.errors) {
+        messages[e] = err.errors[e].message;
+      }
+      res.status(422).json(messages);
+    }
+    else {
+      console.log("Post /User - Internal Error")
+      res.sendStatus(500)
+    }
+  });
 });
 
 app.post("/users", function(req, res) {
@@ -81,7 +118,7 @@ app.post("/users", function(req, res) {
   });
   user.setPassword(req.body.password, function () {
     user.save().then(function () {
-      console.log("saving user")
+      console.log("saving user");
       res.status(201).json(user);
     }, function (err) {
       if (err.errors) {
@@ -97,6 +134,10 @@ app.post("/users", function(req, res) {
       }
     });
   });
+});
+
+app.post("/simpleUsers", function (req, res) {
+  console.log("Simple User Created");
 });
 
 app.get("/users", function (req, res) {
